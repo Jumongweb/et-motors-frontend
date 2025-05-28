@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Car, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -9,22 +10,26 @@ const Footer = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-6">Ready to Get Started?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join the future of car buying and selling. Experience the difference with AutoConnect today.
+            Join the future of car buying and selling. Experience the difference with E&T Motors today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 rounded-full group"
+              asChild
             >
-              Start Selling Cars
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <Link to="/browse">
+                Start Selling Cars
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-4 rounded-full border-2 border-white/20 hover:bg-white/10 text-white"
+              asChild
             >
-              Browse Inventory
+              <Link to="/browse">Browse Inventory</Link>
             </Button>
           </div>
         </div>
@@ -35,7 +40,7 @@ const Footer = () => {
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-xl">
                 <Car className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-bold">AutoConnect</span>
+              <span className="text-2xl font-bold">E&T Motors</span>
             </div>
             
             <div className="flex space-x-8 text-gray-300">
@@ -46,7 +51,7 @@ const Footer = () => {
           </div>
           
           <div className="text-center mt-8 text-gray-400">
-            <p>&copy; 2024 AutoConnect. All rights reserved. Drive Your Dreams. Sell With Confidence.</p>
+            <p>&copy; 2024 E&T Motors. All rights reserved. Drive Your Dreams. Sell With Confidence.</p>
           </div>
         </div>
       </div>
