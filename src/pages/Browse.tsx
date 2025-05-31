@@ -1,61 +1,59 @@
-
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Car, Search, Filter, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getAllCars } from "@/services/carService";
+import { useToast } from "@/hooks/use-toast";
 
 const Browse = () => {
-  const sampleCars = [
-    {
-      id: 1,
-      name: "Lexus GX 570",
-      year: 2023,
-      mileage: 12500,
-      price: 75999,
-      image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      name: "BMW X5",
-      year: 2022,
-      mileage: 18000,
-      price: 62999,
-      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Mercedes-Benz GLE",
-      year: 2023,
-      mileage: 8500,
-      price: 68999,
-      image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Audi Q7",
-      year: 2022,
-      mileage: 22000,
-      price: 58999,
-      image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400&h=300&fit=crop"
-    },
-    {
-      id: 5,
-      name: "Range Rover Sport",
-      year: 2023,
-      mileage: 15000,
-      price: 82999,
-      image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400&h=300&fit=crop"
-    },
-    {
-      id: 6,
-      name: "Porsche Cayenne",
-      year: 2022,
-      mileage: 11000,
-      price: 78999,
-      image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=400&h=300&fit=crop"
+  const { toast } = useToast();
+  const [cars, setCars] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCars = async () => {
+    try {
+      const carsData = await getAllCars();
+      console.log("Fetched cars:", carsData);
+      setCars(carsData);
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load cars. Please make sure your backend is running on port 2026.",
+        variant: "destructive",
+      });
+      // Fallback to sample data if backend is not available
+      setCars([
+        {
+          id: 1,
+          name: "Lexus GX 570",
+          year: 2023,
+          mileage: 12500,
+          price: 75999,
+          images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop"]
+        }
+      ]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading cars...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -122,20 +120,20 @@ const Browse = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleCars.map((car) => (
+          {cars.map((car) => (
             <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="aspect-video bg-gray-200 overflow-hidden">
                 <img
-                  src={car.image}
+                  src={car.images && car.images.length > 0 ? car.images[0] : "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop"}
                   alt={car.name}
                   className="w-full h-full object-cover"
                 />
               </div>
               <CardContent className="p-4">
                 <h3 className="font-bold text-lg mb-2">{car.name}</h3>
-                <p className="text-gray-600 mb-2">{car.year} • {car.mileage.toLocaleString()} miles</p>
+                <p className="text-gray-600 mb-2">{car.year} • {car.mileage?.toLocaleString() || 0} miles</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">${car.price.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-blue-600">${car.price?.toLocaleString() || 0}</span>
                   <Button size="sm" asChild>
                     <Link to={`/car/${car.id}`}>View Details</Link>
                   </Button>
@@ -144,6 +142,15 @@ const Browse = () => {
             </Card>
           ))}
         </div>
+
+        {cars.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No cars found in the inventory.</p>
+            <Button asChild>
+              <Link to="/admin">Add Your First Car</Link>
+            </Button>
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <p className="text-gray-600 mb-4">Want to sell your car?</p>

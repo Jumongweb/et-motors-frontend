@@ -7,8 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Car, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { addCar, CarData } from "@/services/carService";
+import { useToast } from "@/hooks/use-toast";
 
 const Admin = () => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     make: "",
@@ -17,16 +21,18 @@ const Admin = () => {
     price: "",
     mileage: "",
     color: "",
-    transmission: "Automatic",
-    fuelType: "Gasoline",
+    transmission: "AUTOMATIC",
+    fuelType: "GASOLINE",
     engine: "",
-    drivetrain: "FWD",
-    condition: "Excellent",
+    driveTrain: "FWD",
+    vin: "",
+    type: "SUV",
     description: "",
     features: ""
   });
 
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -39,23 +45,88 @@ const Admin = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // In a real app, you would upload these to a server
-      // For now, we'll create object URLs for preview
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-      setImages(prev => [...prev, ...newImages]);
+      const newFiles = Array.from(files);
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      
+      setImages(prev => [...prev, ...newFiles]);
+      setImagePreviews(prev => [...prev, ...newPreviews]);
     }
   };
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => {
+      const newPreviews = prev.filter((_, i) => i !== index);
+      // Clean up the URL object
+      URL.revokeObjectURL(prev[index]);
+      return newPreviews;
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would submit to your backend
-    console.log("Car data:", formData);
-    console.log("Images:", images);
-    alert("Car added successfully!");
+    setIsSubmitting(true);
+
+    try {
+      const carData: CarData = {
+        name: formData.name,
+        make: formData.make,
+        model: formData.model,
+        year: parseInt(formData.year),
+        price: parseFloat(formData.price),
+        mileage: parseInt(formData.mileage),
+        color: formData.color,
+        engine: formData.engine,
+        transmission: formData.transmission,
+        fuelType: formData.fuelType,
+        driveTrain: formData.driveTrain,
+        vin: formData.vin,
+        type: formData.type,
+        isAvailable: true,
+        description: formData.description,
+        features: formData.features,
+        images: images
+      };
+
+      console.log("Submitting car data:", carData);
+      const response = await addCar(carData);
+      console.log("Car added successfully:", response);
+      
+      toast({
+        title: "Success!",
+        description: "Car has been added successfully.",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        make: "",
+        model: "",
+        year: "",
+        price: "",
+        mileage: "",
+        color: "",
+        transmission: "AUTOMATIC",
+        fuelType: "GASOLINE",
+        engine: "",
+        driveTrain: "FWD",
+        vin: "",
+        type: "SUV",
+        description: "",
+        features: ""
+      });
+      setImages([]);
+      setImagePreviews([]);
+    } catch (error) {
+      console.error("Error adding car:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add car. Please check your connection and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -184,10 +255,21 @@ const Admin = () => {
                       required
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vin">VIN</Label>
+                    <Input
+                      id="vin"
+                      name="vin"
+                      value={formData.vin}
+                      onChange={handleInputChange}
+                      placeholder="1HGBH41JXMN109186"
+                      required
+                    />
+                  </div>
                 </div>
 
                 {/* Dropdowns */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="transmission">Transmission</Label>
                     <select
@@ -197,8 +279,8 @@ const Admin = () => {
                       onChange={handleInputChange}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
-                      <option value="Automatic">Automatic</option>
-                      <option value="Manual">Manual</option>
+                      <option value="AUTOMATIC">Automatic</option>
+                      <option value="MANUAL">Manual</option>
                       <option value="CVT">CVT</option>
                     </select>
                   </div>
@@ -211,25 +293,42 @@ const Admin = () => {
                       onChange={handleInputChange}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
-                      <option value="Gasoline">Gasoline</option>
-                      <option value="Diesel">Diesel</option>
-                      <option value="Hybrid">Hybrid</option>
-                      <option value="Electric">Electric</option>
+                      <option value="GASOLINE">Gasoline</option>
+                      <option value="DIESEL">Diesel</option>
+                      <option value="HYBRID">Hybrid</option>
+                      <option value="ELECTRIC">Electric</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="drivetrain">Drivetrain</Label>
+                    <Label htmlFor="driveTrain">Drivetrain</Label>
                     <select
-                      id="drivetrain"
-                      name="drivetrain"
-                      value={formData.drivetrain}
+                      id="driveTrain"
+                      name="driveTrain"
+                      value={formData.driveTrain}
                       onChange={handleInputChange}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
                       <option value="FWD">FWD</option>
                       <option value="RWD">RWD</option>
                       <option value="AWD">AWD</option>
-                      <option value="4WD">4WD</option>
+                      <option value="FOUR_WHEEL_DRIVE">4WD</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Car Type</Label>
+                    <select
+                      id="type"
+                      name="type"
+                      value={formData.type}
+                      onChange={handleInputChange}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="SUV">SUV</option>
+                      <option value="SEDAN">Sedan</option>
+                      <option value="COUPE">Coupe</option>
+                      <option value="HATCHBACK">Hatchback</option>
+                      <option value="TRUCK">Truck</option>
+                      <option value="CONVERTIBLE">Convertible</option>
                     </select>
                   </div>
                 </div>
@@ -285,12 +384,12 @@ const Admin = () => {
                     </div>
                   </div>
                   
-                  {images.length > 0 && (
+                  {imagePreviews.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {images.map((image, index) => (
+                      {imagePreviews.map((preview, index) => (
                         <div key={index} className="relative">
                           <img
-                            src={image}
+                            src={preview}
                             alt={`Upload ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg"
                           />
@@ -311,9 +410,10 @@ const Admin = () => {
 
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
-                  Add Car to Inventory
+                  {isSubmitting ? "Adding Car..." : "Add Car to Inventory"}
                 </Button>
               </form>
             </CardContent>
