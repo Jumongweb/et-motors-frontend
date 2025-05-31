@@ -49,34 +49,59 @@ export const addCar = async (carData: CarData): Promise<any> => {
     });
   }
 
-  const response = await fetch(API_BASE_URL, {
-    method: 'POST',
-    body: formData,
-  });
+  try {
+    const response = await fetch(API_BASE_URL, {
+      method: 'POST',
+      body: formData,
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new Error('Backend server is not running. Please start your Spring Boot application on port 2026.');
+    }
+    throw error;
   }
-
-  return response.json();
 };
 
 export const getAllCars = async (): Promise<any[]> => {
-  const response = await fetch(API_BASE_URL);
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  try {
+    console.log('Fetching cars from:', API_BASE_URL);
+    const response = await fetch(API_BASE_URL);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Successfully fetched cars:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching cars:', error);
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new Error('Cannot connect to backend server. Please make sure your Spring Boot application is running on port 2026.');
+    }
+    throw error;
   }
-  
-  return response.json();
 };
 
 export const getCarById = async (id: string): Promise<any> => {
-  const response = await fetch(`${API_BASE_URL}/${id}`);
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      throw new Error('Backend server is not running. Please start your Spring Boot application on port 2026.');
+    }
+    throw error;
   }
-  
-  return response.json();
 };
