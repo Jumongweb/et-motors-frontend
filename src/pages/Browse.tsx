@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Car, Search, Filter, ArrowLeft } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Car, Search, Filter, ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getAllCars } from "@/services/carService";
 import { useToast } from "@/hooks/use-toast";
@@ -10,13 +11,20 @@ import { useToast } from "@/hooks/use-toast";
 const Browse = () => {
   const { toast } = useToast();
   const [cars, setCars] = useState<any[]>([]);
+  const [filteredCars, setFilteredCars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priceRange, setPriceRange] = useState("");
+  const [yearRange, setYearRange] = useState("");
+  const [makeFilter, setMakeFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchCars = async () => {
     try {
       const carsData = await getAllCars();
       console.log("Fetched cars:", carsData);
       setCars(carsData);
+      setFilteredCars(carsData);
     } catch (error) {
       console.error("Error fetching cars:", error);
       toast({
@@ -25,16 +33,40 @@ const Browse = () => {
         variant: "destructive",
       });
       // Fallback to sample data if backend is not available
-      setCars([
+      const sampleData = [
         {
           id: 1,
           name: "Lexus GX 570",
+          make: "Lexus",
+          model: "GX",
           year: 2023,
           mileage: 12500,
           price: 75999,
           images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=300&fit=crop"]
+        },
+        {
+          id: 2,
+          name: "BMW X5",
+          make: "BMW",
+          model: "X5",
+          year: 2022,
+          mileage: 25000,
+          price: 62000,
+          images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=300&fit=crop"]
+        },
+        {
+          id: 3,
+          name: "Mercedes-Benz C-Class",
+          make: "Mercedes-Benz",
+          model: "C-Class",
+          year: 2021,
+          mileage: 18000,
+          price: 45000,
+          images: ["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400&h=300&fit=crop"]
         }
-      ]);
+      ];
+      setCars(sampleData);
+      setFilteredCars(sampleData);
     } finally {
       setLoading(false);
     }
@@ -43,6 +75,60 @@ const Browse = () => {
   useEffect(() => {
     fetchCars();
   }, []);
+
+  useEffect(() => {
+    let filtered = cars;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(car =>
+        car.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        car.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        car.model?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply make filter
+    if (makeFilter) {
+      filtered = filtered.filter(car => car.make === makeFilter);
+    }
+
+    // Apply price range filter
+    if (priceRange) {
+      const [min, max] = priceRange.split('-').map(Number);
+      filtered = filtered.filter(car => {
+        if (max) {
+          return car.price >= min && car.price <= max;
+        } else {
+          return car.price >= min;
+        }
+      });
+    }
+
+    // Apply year range filter
+    if (yearRange) {
+      const [min, max] = yearRange.split('-').map(Number);
+      filtered = filtered.filter(car => {
+        if (max) {
+          return car.year >= min && car.year <= max;
+        } else {
+          return car.year >= min;
+        }
+      });
+    }
+
+    setFilteredCars(filtered);
+  }, [cars, searchTerm, makeFilter, priceRange, yearRange]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setPriceRange("");
+    setYearRange("");
+    setMakeFilter("");
+    setShowFilters(false);
+  };
+
+  const uniqueMakes = [...new Set(cars.map(car => car.make).filter(Boolean))];
 
   if (loading) {
     return (
@@ -98,29 +184,98 @@ const Browse = () => {
         <div className="mb-8">
           <Card>
             <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input
-                    placeholder="Search by make, model, or keyword..."
-                    className="pl-10"
-                  />
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Input
+                      placeholder="Search by make, model, or keyword..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Button 
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    onClick={() => setShowFilters(!showFilters)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
                 </div>
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </Button>
-                <Button variant="outline">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
+
+                {showFilters && (
+                  <div className="border-t pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Make</label>
+                        <Select value={makeFilter} onValueChange={setMakeFilter}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Make" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Make</SelectItem>
+                            {uniqueMakes.map(make => (
+                              <SelectItem key={make} value={make}>{make}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Price Range</label>
+                        <Select value={priceRange} onValueChange={setPriceRange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Price" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Price</SelectItem>
+                            <SelectItem value="0-25000">Under $25,000</SelectItem>
+                            <SelectItem value="25000-50000">$25,000 - $50,000</SelectItem>
+                            <SelectItem value="50000-75000">$50,000 - $75,000</SelectItem>
+                            <SelectItem value="75000">$75,000+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Year</label>
+                        <Select value={yearRange} onValueChange={setYearRange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Any Year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Any Year</SelectItem>
+                            <SelectItem value="2023-2024">2023-2024</SelectItem>
+                            <SelectItem value="2020-2022">2020-2022</SelectItem>
+                            <SelectItem value="2015-2019">2015-2019</SelectItem>
+                            <SelectItem value="2010-2014">2010-2014</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex items-end">
+                        <Button variant="outline" onClick={clearFilters} className="w-full">
+                          <X className="h-4 w-4 mr-2" />
+                          Clear Filters
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
+        <div className="mb-4">
+          <p className="text-gray-600">
+            Showing {filteredCars.length} of {cars.length} cars
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cars.map((car) => (
+          {filteredCars.map((car) => (
             <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="aspect-video bg-gray-200 overflow-hidden">
                 <img
@@ -142,6 +297,13 @@ const Browse = () => {
             </Card>
           ))}
         </div>
+
+        {filteredCars.length === 0 && cars.length > 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No cars match your current filters.</p>
+            <Button onClick={clearFilters}>Clear Filters</Button>
+          </div>
+        )}
 
         {cars.length === 0 && (
           <div className="text-center py-12">
