@@ -68,12 +68,44 @@ export const addCar = async (carData: CarData): Promise<any> => {
   }
 };
 
+// export const getAllCars = async (): Promise<any[]> => {
+//   try {
+//     console.log('Fetching cars from:', API_BASE_URL);
+//     const response = await fetch(API_BASE_URL);
+    
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
+    
+//     const data = await response.json();
+//     console.log('Successfully fetched cars:', data);
+//     return data;
+//   } catch (error) {
+//     console.error('Error fetching cars:', error);
+//     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+//       throw new Error('Cannot connect to backend server. Please make sure your Spring Boot application is running on port 2026.');
+//     }
+//     throw error;
+//   }
+// };
+
+
 export const getAllCars = async (): Promise<any[]> => {
   try {
+    const API_BASE_URL = 'http://localhost:2026/api/v1/cars';
     console.log('Fetching cars from:', API_BASE_URL);
-    const response = await fetch(API_BASE_URL);
+    
+    const response = await fetch(API_BASE_URL, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    console.log('Response status:', response.status);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
@@ -81,13 +113,14 @@ export const getAllCars = async (): Promise<any[]> => {
     console.log('Successfully fetched cars:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching cars:', error);
+    console.error('Full error details:', error);
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('Cannot connect to backend server. Please make sure your Spring Boot application is running on port 2026.');
+      throw new Error('Cannot connect to backend server. Please make sure: \n1. Your Spring Boot application is running\n2. It\'s running on port 2026\n3. CORS is properly configured');
     }
     throw error;
   }
 };
+
 
 export const getCarById = async (id: string): Promise<any> => {
   try {
@@ -97,11 +130,9 @@ export const getCarById = async (id: string): Promise<any> => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    return response.json();
+    return await response.json();
   } catch (error) {
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('Backend server is not running. Please start your Spring Boot application on port 2026.');
-    }
+    console.error('Error fetching car:', error);
     throw error;
   }
 };

@@ -1,49 +1,70 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Heart, Share2, Phone, Mail } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getCarById } from "@/services/carService";
+import { useToast } from "@/hooks/use-toast";
 
 const CarDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id?: string }>();
+  const { toast } = useToast();
+  const [car, setCar] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample car data - in a real app this would come from an API
-  const car = {
-    id: 1,
-    name: "Lexus GX 570",
-    make: "Lexus",
-    model: "GX 570",
-    year: 2023,
-    price: 75999,
-    mileage: 12500,
-    color: "Pearl White",
-    transmission: "Automatic",
-    fuelType: "Gasoline",
-    engine: "4.6L V8",
-    drivetrain: "4WD",
-    condition: "Excellent",
-    images: [
-      "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop"
-    ],
-    features: [
-      "Leather Seats",
-      "Navigation System",
-      "Backup Camera",
-      "Heated Seats",
-      "Sunroof",
-      "Premium Audio",
-      "Bluetooth",
-      "Keyless Entry"
-    ],
-    description: "This pristine 2023 Lexus GX 570 combines luxury with rugged capability. With only 12,500 miles, this vehicle has been meticulously maintained and offers the perfect blend of comfort and performance for both city driving and off-road adventures."
-  };
+  useEffect(() => {
+    const fetchCar = async () => {
+      if (!id) {
+        setError("No car ID provided");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getCarById(id);
+        setCar(data);
+      } catch (err) {
+        console.error("Error fetching car:", err);
+        setError("Failed to load car details. Please try again or ensure the backend is running on port 2026.");
+        toast({
+          title: "Error",
+          description: error,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCar();
+  }, [id, toast]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading car details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !car) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || "Car not found"}</p>
+          <Button asChild>
+            <Link to="/browse">Back to Browse</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -73,13 +94,13 @@ const CarDetails = () => {
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-lg">
               <img
-                src={car.images[selectedImage]}
+                src={car.images && car.images.length > 0 ? car.images[selectedImage] : "https://via.placeholder.com/800x600?text=No+Image"}
                 alt={`${car.name} - Image ${selectedImage + 1}`}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="grid grid-cols-5 gap-2">
-              {car.images.map((image, index) => (
+              {car.images && car.images.map((image: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -104,8 +125,8 @@ const CarDetails = () => {
                 <h1 className="text-3xl font-bold text-gray-900">{car.name}</h1>
                 <Badge variant="secondary">{car.condition}</Badge>
               </div>
-              <p className="text-2xl font-bold text-blue-600">${car.price.toLocaleString()}</p>
-              <p className="text-gray-600">{car.year} • {car.mileage.toLocaleString()} miles</p>
+              <p className="text-2xl font-bold text-blue-600">${car.price?.toLocaleString() || 0}</p>
+              <p className="text-gray-600">{car.year} • {car.mileage?.toLocaleString() || 0} miles</p>
             </div>
 
             <Card>
@@ -152,9 +173,9 @@ const CarDetails = () => {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-4">Features</h3>
                 <div className="flex flex-wrap gap-2">
-                  {car.features.map((feature, index) => (
+                  {car.features && car.features.split(",").map((feature: string, index: number) => (
                     <Badge key={index} variant="outline">
-                      {feature}
+                      {feature.trim()}
                     </Badge>
                   ))}
                 </div>
