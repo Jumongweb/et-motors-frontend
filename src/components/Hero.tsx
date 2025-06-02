@@ -1,19 +1,42 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Star } from "lucide-react";
 import ReactPlayer from "react-player";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const handlePlay = () => {
     setIsPlaying(true);
   };
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsPlaying(true);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <section className="py-20 lg:py-32 relative overflow-hidden">
+    <section ref={sectionRef} className="py-20 lg:py-32 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
       <div className="container mx-auto px-4 relative">
         <div className="max-w-4xl mx-auto text-center">
@@ -62,7 +85,7 @@ const Hero = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-8 shadow-2xl max-w-4xl mx-auto">
             <div className="aspect-video rounded-xl relative">
               <ReactPlayer
-                url="https://youtu.be/KPEPEhfQcCU?si=fcp7V097vdOUoOre" // Replace with your YouTube video URL
+                url="https://youtu.be/KPEPEhfQcCU?si=fcp7V097vdOUoOre"
                 width="100%"
                 height="100%"
                 playing={isPlaying}
