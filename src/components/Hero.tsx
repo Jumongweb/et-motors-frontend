@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Star } from "lucide-react";
 import ReactPlayer from "react-player";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -39,9 +41,12 @@ const Hero = () => {
             <Button
               size="lg"
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 rounded-full group"
+              asChild
             >
-              Start Buying Cars
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <Link to="/browse">
+                Start Buying Cars
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
             <Button
               variant="outline"
