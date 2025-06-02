@@ -6,17 +6,24 @@ import { Link } from "react-router-dom";
 
 const Hero = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   const handlePlay = () => {
     setIsPlaying(true);
+    setHasUserInteracted(true);
+  };
+
+  const handleThumbnailClick = () => {
+    setIsPlaying(true);
+    setHasUserInteracted(true);
   };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && hasUserInteracted) {
             setIsPlaying(true);
           }
         });
@@ -33,7 +40,7 @@ const Hero = () => {
         observer.unobserve(sectionRef.current);
       }
     };
-  }, []);
+  }, [hasUserInteracted]);
 
   return (
     <section ref={sectionRef} className="py-20 lg:py-32 relative overflow-hidden">
@@ -91,8 +98,9 @@ const Hero = () => {
                 playing={isPlaying}
                 controls
                 light="https://via.placeholder.com/800x450?text=AutoConnect+Demo"
+                onClickPreview={handleThumbnailClick}
                 playIcon={
-                  <div className="text-center">
+                  <div className="text-center cursor-pointer">
                     <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Play className="h-8 w-8 text-white ml-1" />
                     </div>
