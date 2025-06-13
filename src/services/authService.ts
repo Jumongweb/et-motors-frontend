@@ -13,17 +13,20 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+export interface UserResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
 }
 
-export const register = async (registerData: RegisterRequest): Promise<AuthResponse> => {
+export interface LoginResponse {
+  message: string;
+  token: string;
+}
+
+export const register = async (registerData: RegisterRequest): Promise<UserResponse> => {
   try {
     console.log('Registering user:', registerData);
     
@@ -56,7 +59,7 @@ export const register = async (registerData: RegisterRequest): Promise<AuthRespo
   }
 };
 
-export const login = async (loginData: LoginRequest): Promise<AuthResponse> => {
+export const login = async (loginData: LoginRequest): Promise<LoginResponse> => {
   try {
     console.log('Logging in user:', loginData.email);
     
