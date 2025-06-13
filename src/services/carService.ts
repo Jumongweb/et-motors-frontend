@@ -1,5 +1,5 @@
 
-const API_BASE_URL = 'http://localhost:2026/api/v1/cars';
+const API_BASE_URL = 'https://et-motors-backend.onrender.com/api/v1/cars';
 
 export interface CarData {
   name: string;
@@ -62,37 +62,14 @@ export const addCar = async (carData: CarData): Promise<any> => {
     return response.json();
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('Backend server is not running. Please start your Spring Boot application on port 2026.');
+      throw new Error('Backend server is not reachable. Please check if your Render deployment is running.');
     }
     throw error;
   }
 };
 
-// export const getAllCars = async (): Promise<any[]> => {
-//   try {
-//     console.log('Fetching cars from:', API_BASE_URL);
-//     const response = await fetch(API_BASE_URL);
-    
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-    
-//     const data = await response.json();
-//     console.log('Successfully fetched cars:', data);
-//     return data;
-//   } catch (error) {
-//     console.error('Error fetching cars:', error);
-//     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-//       throw new Error('Cannot connect to backend server. Please make sure your Spring Boot application is running on port 2026.');
-//     }
-//     throw error;
-//   }
-// };
-
-
 export const getAllCars = async (): Promise<any[]> => {
   try {
-    const API_BASE_URL = 'http://localhost:2026/api/v1/cars';
     console.log('Fetching cars from:', API_BASE_URL);
     
     const response = await fetch(API_BASE_URL, {
@@ -115,12 +92,11 @@ export const getAllCars = async (): Promise<any[]> => {
   } catch (error) {
     console.error('Full error details:', error);
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error('Cannot connect to backend server. Please make sure: \n1. Your Spring Boot application is running\n2. It\'s running on port 2026\n3. CORS is properly configured');
+      throw new Error('Cannot connect to backend server. Please make sure your Render deployment is running and accessible.');
     }
     throw error;
   }
 };
-
 
 export const getCarById = async (id: string): Promise<any> => {
   try {
@@ -133,6 +109,82 @@ export const getCarById = async (id: string): Promise<any> => {
     return await response.json();
   } catch (error) {
     console.error('Error fetching car:', error);
+    throw error;
+  }
+};
+
+export const searchCars = async (query: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error searching cars:', error);
+    throw error;
+  }
+};
+
+export const deleteCar = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting car:', error);
+    throw error;
+  }
+};
+
+// Additional search endpoints based on your backend
+export const getAvailableCars = async (): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/available`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching available cars:', error);
+    throw error;
+  }
+};
+
+export const getCarsByType = async (type: string): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/type/${encodeURIComponent(type)}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching cars by type:', error);
+    throw error;
+  }
+};
+
+export const getCarsByPriceRange = async (min: number, max: number): Promise<any[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/price-range?min=${min}&max=${max}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching cars by price range:', error);
     throw error;
   }
 };
