@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Star } from "lucide-react";
+import { ArrowRight, Play, Star, Car } from "lucide-react";
 import ReactPlayer from "react-player";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -53,9 +53,13 @@ const Hero = () => {
             </span>
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight relative">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent relative inline-block">
               Drive Your Dreams.
+              {/* Animated Car */}
+              <div className="absolute top-1/2 left-0 w-full h-full pointer-events-none overflow-hidden">
+                <Car className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600 absolute top-1/2 -translate-y-1/2 animate-[drive_2s_ease-in-out_infinite]" />
+              </div>
             </span>
             <br />
             <span className="text-gray-900">Sell With Confidence.</span>
@@ -115,6 +119,25 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes drive {
+          0% {
+            transform: translateX(-100%) translateY(-50%);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(calc(100vw + 100%)) translateY(-50%);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 };

@@ -84,11 +84,28 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'drive': {
+					'0%': {
+						transform: 'translateX(-100%) translateY(-50%)',
+						opacity: '0'
+					},
+					'10%': {
+						opacity: '1'
+					},
+					'90%': {
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'translateX(calc(100vw + 100%)) translateY(-50%)',
+						opacity: '0'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'drive': 'drive 2s ease-in-out infinite'
 			}
 		}
 	},
