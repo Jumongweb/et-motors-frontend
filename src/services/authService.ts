@@ -6,6 +6,7 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 export interface LoginRequest {
@@ -28,7 +29,18 @@ export interface LoginResponse {
 
 export const register = async (registerData: RegisterRequest): Promise<UserResponse> => {
   try {
-    console.log('Registering user:', registerData);
+    console.log('Registering user with data:', registerData);
+    
+    // Ensure all fields are properly trimmed and not null
+    const cleanedData = {
+      firstName: registerData.firstName.trim(),
+      lastName: registerData.lastName.trim(),
+      email: registerData.email.trim(),
+      password: registerData.password,
+      confirmPassword: registerData.confirmPassword
+    };
+
+    console.log('Cleaned registration data:', cleanedData);
     
     const response = await fetch(`${API_BASE_URL}/register`, {
       method: 'POST',
@@ -36,7 +48,7 @@ export const register = async (registerData: RegisterRequest): Promise<UserRespo
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(registerData),
+      body: JSON.stringify(cleanedData),
     });
 
     console.log('Register response status:', response.status);
@@ -63,13 +75,19 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
   try {
     console.log('Logging in user:', loginData.email);
     
+    // Ensure fields are properly trimmed
+    const cleanedData = {
+      email: loginData.email.trim(),
+      password: loginData.password
+    };
+    
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(loginData),
+      body: JSON.stringify(cleanedData),
     });
 
     console.log('Login response status:', response.status);

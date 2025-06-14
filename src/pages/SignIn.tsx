@@ -66,15 +66,25 @@ const SignIn = () => {
       saveToken(response.token);
       
       toast({
-        title: "Welcome back!",
+        title: "Welcome back! 🚗",
         description: response.message || "Login successful",
+        variant: "default",
       });
 
-      // Navigate to home page or dashboard
-      navigate("/");
+      // Navigate to home page after a short delay to show the toast
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (error: any) {
       console.error('Login error:', error);
-      setError(error.message || "Login failed. Please try again.");
+      const errorMessage = error.message || "Login failed. Please try again.";
+      setError(errorMessage);
+      
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

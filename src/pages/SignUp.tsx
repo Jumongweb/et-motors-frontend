@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,21 +78,32 @@ const SignUp = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
       });
 
       console.log('Registration successful:', response);
       
       toast({
-        title: "Account created successfully!",
-        description: "You can now sign in with your credentials.",
+        title: "Success! 🎉",
+        description: "Your account has been created successfully. You can now sign in.",
+        variant: "default",
       });
 
-      // Navigate to sign in page
-      navigate("/signin");
+      // Navigate to sign in page after a short delay to show the toast
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1000);
     } catch (error: any) {
       console.error('Registration error:', error);
-      setError(error.message || "Registration failed. Please try again.");
+      const errorMessage = error.message || "Registration failed. Please try again.";
+      setError(errorMessage);
+      
+      toast({
+        title: "Registration Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
