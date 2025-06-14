@@ -73,13 +73,21 @@ export const register = async (registerData: RegisterRequest): Promise<UserRespo
 
 export const login = async (loginData: LoginRequest): Promise<LoginResponse> => {
   try {
-    console.log('Logging in user:', loginData.email);
+    console.log('Attempting login with email:', loginData.email);
+    console.log('Login data received:', { email: loginData.email, passwordLength: loginData.password?.length });
     
-    // Ensure fields are properly trimmed
+    // Validate input data
+    if (!loginData.email || !loginData.password) {
+      throw new Error('Email and password are required');
+    }
+
+    // Ensure fields are properly trimmed and validated
     const cleanedData = {
       email: loginData.email.trim(),
       password: loginData.password
     };
+
+    console.log('Sending login request with:', { email: cleanedData.email, passwordLength: cleanedData.password.length });
     
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
@@ -91,14 +99,37 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
     });
 
     console.log('Login response status:', response.status);
+    console.log('Login response headers:', response.headers);
+    
+    // Get response text first to handle both JSON and plain text responses
+    const responseText = await response.text();
+    console.log('Login raw response:', responseText);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Login error response:', errorText);
-      throw new Error(errorText || `HTTP error! status: ${response.status}`);
+      console.error('Login failed with status:', response.status);
+      console.error('Login error response:', responseText);
+      
+      // Try to parse as JSON first, fallback to plain text
+      let errorMessage;
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error || responseText;
+      } catch {
+        errorMessage = responseText || `HTTP error! status: ${response.status}`;
+      }
+      
+      throw new Error(errorMessage);
     }
     
-    const data = await response.json();
+    // Parse successful response
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse login response as JSON:', parseError);
+      throw new Error('Invalid response format from server');
+    }
+    
     console.log('Successfully logged in user:', data);
     return data;
   } catch (error) {

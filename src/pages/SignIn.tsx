@@ -55,6 +55,8 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
+      console.log('Form data before login:', formData);
+      
       const response = await login({
         email: formData.email,
         password: formData.password
@@ -76,7 +78,7 @@ const SignIn = () => {
         navigate("/");
       }, 1000);
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Login error caught:', error);
       const errorMessage = error.message || "Login failed. Please try again.";
       setError(errorMessage);
       
