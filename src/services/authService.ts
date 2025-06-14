@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'https://et-motors-backend.onrender.com/api/auth';
 
 export interface RegisterRequest {
@@ -144,6 +143,10 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
 // Utility functions for token management
 export const saveToken = (token: string): void => {
   localStorage.setItem('authToken', token);
+};
+
+export const saveUserData = (userData: any): void => {
+  localStorage.setItem('userData', JSON.stringify(userData));
 };
 
 export const getToken = (): string | null => {

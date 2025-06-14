@@ -1,14 +1,22 @@
-
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Car, Menu, X, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -40,12 +48,31 @@ const Header = () => {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="hidden md:inline-flex" asChild>
-              <Link to="/signin">Sign In</Link>
-            </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
-              <Link to="/browse">Get Started</Link>
-            </Button>
+            {isAuthenticated && user ? (
+              <>
+                <span className="hidden md:inline-flex text-sm font-medium text-gray-700">
+                  Welcome {user.firstName}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={handleLogout}
+                  className="hidden md:inline-flex"
+                  title="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" className="hidden md:inline-flex" asChild>
+                  <Link to="/signin">Sign In</Link>
+                </Button>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
+                  <Link to="/browse">Get Started</Link>
+                </Button>
+              </>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -90,9 +117,25 @@ const Header = () => {
                 Pricing
               </a>
               <div className="border-t border-white/20 pt-4 flex flex-col space-y-2">
-                <Button variant="ghost" className="justify-start" asChild>
-                  <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-                </Button>
+                {isAuthenticated && user ? (
+                  <>
+                    <span className="text-sm font-medium text-gray-700 px-2 py-1">
+                      Welcome {user.firstName}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="ghost" className="justify-start" asChild>
+                    <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
+                  </Button>
+                )}
               </div>
             </nav>
           </div>

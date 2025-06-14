@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Car, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { login, saveToken } from "@/services/authService";
+import { login, saveToken, saveUserData } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 
 const SignIn = () => {
@@ -66,6 +65,20 @@ const SignIn = () => {
       
       // Save token to localStorage
       saveToken(response.token);
+      
+      // If the response includes user data, save it
+      if (response.user) {
+        saveUserData(response.user);
+      } else {
+        // If user data is not in response, create it from form data
+        // This is a fallback - ideally the backend should return user data
+        const userData = {
+          firstName: formData.email.split('@')[0], // fallback name from email
+          lastName: '',
+          email: formData.email
+        };
+        saveUserData(userData);
+      }
       
       toast({
         title: "Welcome back! 🚗",
