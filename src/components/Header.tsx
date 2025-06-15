@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -69,7 +70,7 @@ const Header = () => {
                   <Link to="/signin">Sign In</Link>
                 </Button>
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
-                  <Link to="/browse">Get Started</Link>
+                  <Link to="/cars">Get Started</Link>
                 </Button>
               </>
             )}
