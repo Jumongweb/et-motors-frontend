@@ -1,18 +1,33 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Car, Upload, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Car, Upload, X, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { addCar, CarData } from "@/services/carService";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const Admin = () => {
   const { toast } = useToast();
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "You must be logged in to add cars. Please sign in first.",
+        variant: "destructive",
+      });
+      navigate("/signin");
+    }
+  }, [isAuthenticated, loading, navigate, toast]);
+
   const [formData, setFormData] = useState({
     name: "",
     make: "",
@@ -128,6 +143,41 @@ const Admin = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-6">You must be logged in to add cars to the inventory.</p>
+            <div className="space-y-2">
+              <Button className="w-full" asChild>
+                <Link to="/signin">Sign In</Link>
+              </Button>
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/cars">Browse Cars</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">

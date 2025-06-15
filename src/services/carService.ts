@@ -24,6 +24,12 @@ export interface CarData {
 }
 
 export const addCar = async (carData: CarData): Promise<any> => {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('You must be logged in to add a car. Please sign in first.');
+  }
+
   const formData = new FormData();
   
   // Add all car data to FormData
@@ -52,12 +58,7 @@ export const addCar = async (carData: CarData): Promise<any> => {
   }
 
   try {
-    const token = getToken();
     console.log('Token being sent:', token ? 'Token exists' : 'No token found');
-    
-    if (!token) {
-      throw new Error('No authentication token found. Please log in again.');
-    }
 
     const headers: HeadersInit = {
       'Authorization': `Bearer ${token}`
