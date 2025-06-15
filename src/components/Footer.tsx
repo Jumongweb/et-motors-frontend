@@ -18,7 +18,7 @@ const Footer = () => {
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg px-8 py-4 rounded-full group"
               asChild
             >
-              <Link to="/browse">
+              <Link to="/cars">
                 Start Selling Cars
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
@@ -29,7 +29,7 @@ const Footer = () => {
               className="text-lg px-8 py-4 rounded-full border-2 border-white/20 hover:bg-white/10 text-white"
               asChild
             >
-              <Link to="/browse">Browse Inventory</Link>
+              <Link to="/cars">Browse Inventory</Link>
             </Button>
           </div>
         </div>
