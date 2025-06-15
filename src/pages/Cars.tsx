@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -188,17 +187,6 @@ const Cars = () => {
           </p>
         </div>
 
-        {isAuthenticated && (
-          <div className="mb-8 text-center">
-            <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700" asChild>
-              <Link to="/admin">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Car
-              </Link>
-            </Button>
-          </div>
-        )}
-
         <div className="mb-8">
           <Card>
             <CardContent className="p-6">
@@ -213,13 +201,23 @@ const Cars = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <Button 
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filters
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      onClick={() => setShowFilters(!showFilters)}
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filters
+                    </Button>
+                    {isAuthenticated && (
+                      <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700" asChild>
+                        <Link to="/admin">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Car
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {showFilters && (

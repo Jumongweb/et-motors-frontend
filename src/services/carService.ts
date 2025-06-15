@@ -53,11 +53,17 @@ export const addCar = async (carData: CarData): Promise<any> => {
 
   try {
     const token = getToken();
-    const headers: HeadersInit = {};
+    console.log('Token being sent:', token ? 'Token exists' : 'No token found');
     
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (!token) {
+      throw new Error('No authentication token found. Please log in again.');
     }
+
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${token}`
+    };
+
+    console.log('Sending request with headers:', headers);
 
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
@@ -65,15 +71,24 @@ export const addCar = async (carData: CarData): Promise<any> => {
       body: formData,
     });
 
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      
       if (response.status === 403) {
-        throw new Error('Authentication required. Please log in to add cars.');
+        throw new Error('Authentication failed. Please log in again to add cars.');
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.status === 401) {
+        throw new Error('Your session has expired. Please log in again.');
+      }
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     return response.json();
   } catch (error) {
+    console.error('Add car error:', error);
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
       throw new Error('Backend server is not reachable. Please check if your Render deployment is running.');
     }
