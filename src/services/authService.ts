@@ -24,6 +24,7 @@ export interface UserResponse {
 export interface LoginResponse {
   message: string;
   token: string;
+  user: UserResponse;
 }
 
 export const register = async (registerData: RegisterRequest): Promise<UserResponse> => {

@@ -1,4 +1,6 @@
 
+import { getToken } from './authService';
+
 const API_BASE_URL = 'https://et-motors-backend.onrender.com/api/v1/cars';
 
 export interface CarData {
@@ -50,12 +52,23 @@ export const addCar = async (carData: CarData): Promise<any> => {
   }
 
   try {
+    const token = getToken();
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
+      headers,
       body: formData,
     });
 
     if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('Authentication required. Please log in to add cars.');
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
